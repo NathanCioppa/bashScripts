@@ -1,0 +1,7 @@
+#!/bin/sh
+
+devices=$(bluetoothctl devices)
+
+selection=$(echo "$(echo "$devices" | awk '{print $3" "$2}')" | dmenu "$@" -c -l 5 -p "Devices:")
+
+bluetoothctl connect "$(echo "$selection" | awk '{print $2}')"
