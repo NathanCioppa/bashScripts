@@ -1,7 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 
 devices=$(bluetoothctl devices)
+connected=$(bluetoothctl devices Connected)
 
-selection=$(echo "$(echo "$devices" | awk '{print $3" "$2}')" | dmenu "$@" -c -l 5 -p "Devices:")
+# same contents and order as $devices, but connected devices have a * appended to the start of their name
+markedDeviceList=""
 
-bluetoothctl connect "$(echo "$selection" | awk '{print $2}')"
+while IFS= read -r line; do
+	if [[ $connected == *"$line"* ]]; then
+		markedDeviceList+="$(echo "$line" | awk '{print $1" "$2" *"$3}')\n"
+	else
+		markedDeviceList+="$line\n"
+	fi
+done <<< "$devices"
+
+selection=$(echo "$(printf "%b" "$markedDeviceList" | awk '{print $3" "$2}')" | dmenu "$@" -c -l 5 -p "Devices:")
+selectedMac=$(echo "$selection" | awk '{print $2}')
+if [[ $connected == *"$selectedMac"* ]]; then
+	bluetoothctl disconnect "$selectedMac"
+else
+	bluetoothctl connect "$selectedMac"
+fi
