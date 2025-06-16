@@ -16,8 +16,11 @@ done <<< "$devices"
 
 selection=$(echo "$(printf "%b" "$markedDeviceList" | awk '{print $3" "$2}')" | dmenu "$@" -c -l 5 -p "Devices:")
 selectedMac=$(echo "$selection" | awk '{print $2}')
+
+[ -z "$selectedMac" ] && exit
+
 if [[ $connected == *"$selectedMac"* ]]; then
-	bluetoothctl disconnect "$selectedMac"
+	${SHELL:-/bin/sh} -c "bluetoothctl disconnect $selectedMac"
 else
-	bluetoothctl connect "$selectedMac"
+	${SHELL:-/bin/sh} -c "bluetoothctl connect $selectedMac"
 fi
