@@ -1,0 +1,20 @@
+#!/bin/bash
+mapsDir="/home/$USER/.local/bin/.dmenu_maps"
+mapName="$1"
+
+echo "$@" >> errs
+
+if [ ! -f "$mapsDir/$mapName" ]; then
+	echo "$mapsDir/$mapName not found"
+	exit 1
+fi
+
+options=$(cat "$mapsDir/$mapName")
+
+selection=$(echo "$options" | awk '{print $1}' | dmenu -c -l 5 -p "Launch:" "${@:2}")
+
+[ -z "$selection" ] && exit
+
+selectedCommand="$(echo "$options" | grep "$selection" | cut -d' ' -f2-)"
+
+${SHELL:-/bin/sh} -c "$selectedCommand"
